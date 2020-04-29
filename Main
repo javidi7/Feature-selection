@@ -1,0 +1,167 @@
+ 
+ filename = 'Boston.csv'; %%%%import dataset
+datasets = xlsread(filename);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%preprocessing
+%%missing value
+datasets = fillmissing(datasets,'movmedian',10);
+%%outlier
+% Boston=zeros(size(datasets,1),size(datasets,2));
+% numcol=size(Boston,2);%%%%dataset columns
+% for i=1:numcol
+Boston = rmoutliers(datasets,'quartiles');
+% end
+Boston=Boston(:,any(Boston)); %remove zero columns 
+%%%%%
+%%%%%% for classification/regression
+prompt = 'is dataset appropriate for classification or regression? [c/r]  ';%%determined classification or regression
+str = input(prompt,'s');
+if isempty(str)
+    str = 'r';
+end
+inputt=Boston(:,1:end-1);%%%%dataset columns
+ a=0;
+ b= size(inputt,2);
+ %%%%best solution initialize
+  bestsol1.position=(b-a).*rand(size(inputt,2),1)+a;
+  bestsol1.fitness=1000000000000000000;
+%  bestsol1.position=zeros(1,b);
+  bestsol1.position=bestsol1.position';
+  bestsol2.position=(b-a).*rand(size(inputt,2),1)+a;
+  bestsol2.position=bestsol2.position';
+% bestsol2.position=zeros(1,b);
+% bestsol3.position=zeros(1,b);
+bestsol2.fitness=1000000000000000000;
+
+bestsol3.position=(b-a).*rand(size(inputt,2),1)+a;
+  bestsol3position=bestsol2.position';
+  bestsol3.fitness=1000000000000000000;
+ %%%%
+data.y=Boston(:,end); %%%%%%%% target
+ outputt=data.y;
+ i=1;
+data.nx=size(Boston(:,1:end-1),2);%%%%% number of features
+data.ny=size(Boston(:,end),2);%%%%% number of target
+data.nsample=size(Boston,1);
+nsamples=data.nsample;  %%%%%% number of samples
+costfit11=inf;
+costfit21=inf;
+costfit31=inf;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[o]=agentss(Boston,data); %%%%%%% agents structure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+while bestsol1.fitness<costfit11 &bestsol2.fitness<costfit21 & bestsol3.fitness<costfit31 & bestsol1.position~=bestsol2.position & bestsol1.position~=bestsol3.position & bestsol2.position~=bestsol3.position
+    switch str
+        case 'r'
+%       parpool('AttachedFiles',{'BM1.m','BM2.m','BM3.m'})
+      F1 = parfeval(@BM1,4,Boston,data,o,str);
+      [costerr1,costfit1,kolsol1,bestsol1]=fetchOutputs(F1);
+      F2 = parfeval(@BM2,4,Boston,data,o,str);
+            [costerr2,costfit2,kolsol2,bestsol2]=fetchOutputs(F2);
+
+          F3 = parfeval(@BM3,4,Boston,data,o,str);
+                [costerr3,costfit3,kolsol3,bestsol3]=fetchOutputs(F3);
+
+% [costerr1,costfit1,kolsol1,bestsol1]=BM1(Boston,data,o,str);%%first population
+% [costerr2,costfit2,kolsol2,bestsol2]=BM2(Boston,data,o,str);%second population
+% [costerr3,costfit3,kolsol3,bestsol3]=BM3(Boston,data,o,str);%third population
+        otherwise
+[costerr1,costfit1,kolsol1,bestsol1]=BM1(Boston,data,o,str);%%first population
+[costerr2,costfit2,kolsol2,bestsol2]=BM2(Boston,data,o,str);%second population
+    end
+
+    if bestsol1.fitness<=cosfit11
+        costfit11=bestsol1.fitness;
+    end
+    if bestsol2.fitness<=cosfit21
+        costfit21=bestsol2.fitness;
+    end
+    if bestsol3.fitness<=cosfit31
+        costfit31=bestsol3.fitness;
+    end
+end
+
+% best.newf=newfeat;
+
+newfeat1=bestsol1.newf;
+inputt1=newfeat1;
+
+      TrPercent1 =60;
+       
+%     
+     TrNum1 = round(nsamples * TrPercent1 / 100);
+     TsNum1 = nsamples- TrNum1;
+% 
+     R1 = randperm(nsamples);
+     trIndex1 = R1(1 : TrNum1);
+     tsIndex1 = R1(1+TrNum1 : end);
+    trainingsample1=inputt(trIndex1,:);
+    traininglabel1=outputt(trIndex1,:);
+     testingsample1=inputt(tsIndex1,:);
+     testinglabel1=outputt(tsIndex1,:);
+%     outputnumtest=size(testinglabel,2);
+ switch str
+        case 'r'
+     Mdl1 = fitrsvm(trainingsample1,traininglabel1); 
+     otherwise
+  Mdl1 = fitcsvm(trainingsample1,traininglabel1); 
+ end
+
+    yfit21 = predict(Mdl1,testingsample1);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % best.newf=newfeat;
+newfeat2=bestsol2.newf;
+inputt2=newfeat2;
+
+      TrPercent2 =60;
+       
+%     
+     TrNum2 = round(nsamples * TrPercent2 / 100);
+     TsNum2 = nsamples- TrNum2;
+% 
+     R2 = randperm(nsamples);
+     trIndex2 = R2(1 : TrNum2);
+     tsIndex2 = R2(1+TrNum2 : end);
+    trainingsample2=inputt(trIndex2,:);
+    traininglabel2=outputt(trIndex2,:);
+     testingsample2=inputt(tsIndex2,:);
+     testinglabel2=outputt(tsIndex2,:);
+%     outputnumtest=size(testinglabel,2);
+switch str
+        case 'r'
+     Mdl2 = fitrsvm(trainingsample2,traininglabel2); 
+    otherwise
+             Mdl2 = fitcsvm(trainingsample2,traininglabel2); 
+end
+
+    yfit22 = predict(Mdl2,testingsample2);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+newfeat3=bestsol3.newf;
+inputt3=newfeat3;
+
+      TrPercent2 =60;
+       
+%     
+     TrNum3 = round(nsamples * TrPercent3 / 100);
+     TsNum3 = nsamples- TrNum3;
+% 
+     R3 = randperm(nsamples);
+     trIndex3 = R3(1 : TrNum3);
+     tsIndex3 = R3(1+TrNum3 : end);
+    trainingsample3=inputt(trIndex3,:);
+    traininglabel3=outputt(trIndex3,:);
+     testingsample3=inputt(tsIndex3,:);
+     testinglabel3=outputt(tsIndex3,:);
+%     outputnumtest=size(testinglabel,2);
+switch str
+        case 'r'
+     Mdl3 = fitrsvm(trainingsample3,traininglabel3); 
+    otherwise
+     Mdl3 = fitcsvm(trainingsample3,traininglabel3); 
+end
+
+    yfit33 = predict(Mdl3,testingsample3);
+
+
