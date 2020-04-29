@@ -1,0 +1,184 @@
+function [costerr,costfit,kolsol,BestSol]=BM1(Boston,data,o,cr)%%first population instruction
+MaxIt=15;      % Maximum Number of Iterations
+pr=rand;
+npop=15;        % Population Size
+maxcycle=10;
+cycle=0;
+c=0;
+BestSol.fitness=inf;
+BestSol.position = [];
+BestSol.clusters = [];
+BestSol.err = inf;
+BestSol.newf = [];
+%BestSol.crcof=[];
+%  BestSol.wei=[];
+% BestSol.errorfit=[];
+numdim=data.nx+2+1;
+
+GBest.CostMAT = [];
+GBesterr.CostMAT = [];
+
+%% Initialization
+
+disp('Initialization ...');
+% 
+% empty_individual.position=[];
+%  c=0;
+% empty_individual.clusters=[];
+% empty_individual.newf=[];
+% empty_individual.fitness=[];
+% empty_individual.err=[];
+% % empty_individual.errorfit=[];
+% %  empty_individual.wei=[];
+% 
+% 
+% empty_individual.crcof=[];
+
+%1. start build first population
+for t=1:npop
+% o(t).position=bld_pos(data,numdim);
+% o(t).clusters=c;
+% o(t).clusters=idt_cl(o(t).position,data,Boston);
+%  o(t).newf=bld_new(o(t).clusters,data,Boston,o(t).position);
+% % [o(t).newf,o(t).wei]=bld_new(o(t).clusters,data,Boston,o(t).position);
+[o(t).fitness,o(t).err]=cal_fit1(o(t).newf,Boston,cr);
+end
+
+errs=[o.fitness];
+[errs, SortOrder]=sort(errs);
+o=o(SortOrder);
+
+
+% Store Best Solution
+
+% BestSol=o(1);
+if o(1).fitness < BestSol.fitness
+        BestSol.position = o(1).position;
+        BestSol.clusters = o(1).clusters;
+        BestSol.newf=o(1).newf;
+        BestSol.fitness=o(1).fitness;
+       % BestSol.err=o(1).err;
+        %BestSol.crcof=o(1).crcof;
+end
+% diverr=zeros(npop,3);
+% for t=1:npop
+% dor(1).diverr(t,1)=cal_RI(o(t).position,BestSol.position);
+% dor(1).diverr(t,2)=abs(BestSol.fitness -o(t).fitness);
+% dor(1).diverr(t,3)=abs(o(t).fitness);
+% end
+
+% BestSol.Cost
+% Array to Hold Best Cost Values
+BestCost=zeros(MaxIt,1);
+BestCosterr=zeros(MaxIt,1);
+
+% Store Cost
+WorstCost=o(end).fitness;
+BestCost=BestSol.fitness;
+
+
+%% Main Loop
+
+for it=1:MaxIt
+   %gh=zeros(npop,size((BestSol.position),2));
+   stsize=2-1.7*(it-1/MaxIt-1); 
+   disp(['Starting Iteration ' num2str(it) ' ...']);
+%     for i=1:npop
+%         
+%     gh(i,:)=[o(1,i).position];
+%     end
+%     kr=[o.err];
+%     kr=kr';
+    for i=1:npop
+        r1=rand;
+        if r1<pr
+           newpos.position=o(i).position+ (stsize*(abs(BestSol.position-o(i).position)));
+        else
+            inds=randperm(npop);
+            ind1=o(inds(1,1)).position;
+            ind2=o(inds(1,2)).position;
+            sigmaa=rand(numdim,1);
+            newpos.position=o(i).position+abs(sigmaa.*(ind1-ind2));
+        end
+         newpos.position=cr_intvl(newpos.position,Boston);
+        newpos.clusters=c;
+        newpos.clusters=idt_cl(newpos.position,data,Boston);
+        newpos.newf=bld_new(newpos.clusters,data,Boston,newpos.position);
+        [newpos.fitness,newpos.err]=cal_fit1(newpos.newf,Boston,cr);
+         if newpos.fitness<o(i).fitness
+             o(i).position=newpos.position;
+             o(i).clusters=newpos.clusters;
+             o(i).newf=newpos.newf;
+             o(i).fitness=newpos.fitness;
+             o(i).err=newpos.err;
+             cycle=0;
+         else
+             cycle=cycle+1;
+             if cycle>=maxcycle
+                 newind.position=bld_pos(data,numdim);
+                 newind.clusters=c;
+                 newind.clusters=idt_cl(newind.position,data,Boston);
+                 newind.newf=bld_new(newind.clusters,data,Boston,newind.position);
+                 [newind.fitness,newind.err]=cal_fit1(newind.newf,Boston,cr);
+                 o(i).position=newind.position;
+                 o(i).clusters=newind.clusters;
+                 o(i).newf=newind.newf;
+                 o(i).fitness=newind.fitness;
+                 o(i).err=newind.err;
+             
+             end
+         end
+
+    end
+   
+    
+    
+    
+ 
+% for t=1:npop
+% dor(it+1).diverr(t,1)=cal_RI(o(t).position,BestSol.position);
+% dor(it+1).diverr(t,2)=abs(BestSol.err -o(t).err);
+% dor(it+1).diverr(t,3)=abs(o(t).fitness);
+% end
+    % Store Best Solution Ever Found
+%     BestSol=o(1);
+    
+    % Store Best Cost Ever Found
+   
+            % Sort Population
+   errs=[o.fitness];
+[errs, SortOrder]=sort(errs);
+o=o(SortOrder);
+% Update Worst Cost
+    WorstCost=max(WorstCost,o(end).fitness);
+    
+    % Truncation
+%     ch=ch(1:npop);
+%     Costs=Costs(1:npop);
+if o(1).fitness <= BestSol.fitness
+        BestSol.position = o(1).position;
+        BestSol.clusters = o(1).clusters;
+        BestSol.newf=o(1).newf;
+        BestSol.fitness=o(1).fitness;
+        BestSol.err=o(1).err;
+        %BestSol.crcof=o(1).crcof;
+end
+   BestCost(it)=BestSol.fitness;
+    BestCosterr(it)=BestSol.err;
+%     ch=ch';
+%     chc=chc';
+%     chm=chm';
+    % Show Iteration Information
+    disp(['Iteration ' num2str(it) ': Best Cost fit= ' num2str(BestCost(it))]);
+    disp(['Iteration ' num2str(it) ': Best Cost err= ' num2str(BestCosterr(it))]);
+    GBest.CostMAT = [GBest.CostMAT BestSol.fitness];
+    GBesterr.CostMAT = [GBesterr.CostMAT  BestSol.err]; 
+end
+kolsol=o;
+costfit=BestCost;
+costerr=BestCosterr;
+figure(11)
+plot(GBest.CostMAT)
+figure(12)
+plot(GBesterr.CostMAT)
+end
