@@ -1,0 +1,29 @@
+function [fit,erorr]=cal_fit2(newfeat,Boston,cr)%%%calculate fitness for agents in second population
+indices = crossvalind('Kfold',newfeat(:,1),10);
+erorr=0;
+
+w1=0.1;
+% w2=0.3;
+w3=0.9;
+for i = 1:10
+    test = (indices == i); 
+    train = ~test;
+%     class = classify(meas(test,:),meas(train,:),species(train,:));
+%     classperf(cp,class,test);
+    tt=Boston(:,end);
+    switch cr
+        case 'r'
+    Mdl = fitrsvm(newfeat(train,:),tt(train,1)); 
+        otherwise
+    Mdl = fitcsvm(newfeat(train,:),tt(train,1)); 
+    end
+
+    yfit = predict(Mdl,newfeat(test,:));
+    %op=tt(test,:);
+    erorr =erorr+immse(tt(test,1),yfit);
+end
+erorr=erorr/10;
+%ccoef=corr(newfeat,Boston(:,end));
+%fit=w1*erorr+w2*(1/max(ccoef))+w3*size(newfeat,2);
+fit=w1*erorr+w3*size(newfeat,2);
+end
