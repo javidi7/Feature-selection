@@ -1,0 +1,19 @@
+function newfeatures=bld_new(clusters,data,Boston,positions)
+numw=ceil(positions(1,end));
+if numw==1
+    newfeatures=hardw(clusters,Boston); %%%%strict weight method
+%     [newfeatures,wt]=hardw(clusters,Boston);
+end
+if numw==2
+     newfeatures=softw(clusters,Boston);%%%% moderate weight method
+%      [newfeatures,wt]=softw(clusters,Boston);
+
+end
+
+if numw==3
+     newfeatures=hybridw(clusters,Boston);%%%% hybrid weight method
+%      [newfeatures,wt]=softw(clusters,Boston);
+
+end
+
+end
