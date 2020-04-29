@@ -1,4 +1,4 @@
-function hardv=hardw(clusters,Boston)%%hard weight method for extract features
+function hardv=hardw(clusters,Boston)%%strict weight method for extract features
 hardv=zeros(size(Boston,1),size(clusters,2));
 for i=1:size(clusters,2)
     sf=find(clusters(:,i)~=0);
