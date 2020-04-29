@@ -1,0 +1,8 @@
+function loc=bld_pos(data,numdim)%%initialize agents' positions
+loc=zeros(1,numdim);
+loc(1,1:data.nx)=randperm(data.nx);
+Talfaf=rand;
+Talfat=(2-0).*rand(1,1) + 0;
+loc(1,data.nx+1:data.nx+2)=[Talfaf Talfat];
+loc(1,end)=(3-0).*rand(1,1) + 0;
+end
