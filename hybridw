@@ -1,0 +1,19 @@
+function hybridv=hybridw(clusters,Boston)%%%hybrid weight method
+hybridv=zeros(size(Boston,1),size(clusters,2));
+for i=1:size(clusters,2)
+    for k=1:size(Boston,2)
+        cc=zeros(size(Boston,1),1);
+    sf=find(clusters(:,i)~=0);
+    
+    c=zeros(size(Boston,1),size(sf,1));
+    for j=1:size(sf,2)
+        c(:,j)=Boston(:,clusters(sf(j,1),i));
+    end
+    tc=corr(Boston(:,k),c);
+    tc=max(tc);
+    cc=cc+tc.*Boston(:,k);
+    end
+    hybridv(:,i)=cc;
+end
+
+end
