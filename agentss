@@ -1,0 +1,22 @@
+
+function [o]=agentss(Boston,data)
+npop=15;%%%%% number of agents
+numdim=data.nx+2+1; %calculate each agent dimension (sequencing + No.weighting_method)
+empty_individual.position=[]; 
+ c=0;
+empty_individual.clusters=[];
+empty_individual.newf=[];
+empty_individual.fitness=[];
+empty_individual.err=[];
+% empty_individual.errorfit=[];
+%  empty_individual.wei=[];
+%empty_individual.crcof=[];
+for t=1:npop
+o(t).position=bld_pos(data,numdim);%%%initialize agents' squencing and weighting method part
+o(t).clusters=c;%%%%initialize clusters
+o(t).clusters=idt_cl(o(t).position,data,Boston); % clustring
+o(t).newf=bld_new(o(t).clusters,data,Boston,o(t).position);%%extract features
+% [o(t).newf,o(t).wei]=bld_new(o(t).clusters,data,Boston,o(t).position);
+%[pop(t).fitness,o(t).err,o(t).crcof]=cal_fit(o(t).newf,Boston);
+end
+end
