@@ -1,0 +1,45 @@
+function clust=idt_cl(poss,data,Boston)%%%initialize clusters
+
+clust(1,1)=poss(1,1);
+% flag=1;
+alfaf=poss(1,data.nx+1);
+alfat=poss(1,data.nx+2);
+for i=2:data.nx
+    for k=1:size(clust,2)
+        
+     numfich(1,k)=size(find(clust(:,k)~=0),1);
+    end
+    for k=1:size(clust,2)
+        if numfich(1,k)>1
+            c=0;
+            ch=find(clust(:,k)~=0);
+            for k2=1:size(ch,1)
+                c=c+Boston(:,clust(ch(k2,1),k))';
+            end
+            c=c./numfich(1,k);
+            meann(k,1).c=c';
+            
+        else
+            meann(k,1).c=Boston(:,clust(1,k));
+        end
+    end
+    flag=0;
+    flag1=0;
+    for j=1:size(clust,2)
+     out=abs(corr((Boston(:,end)),Boston(:,poss(1,i)))- corr(Boston(:,end),meann(j,1).c));
+        if corr(Boston(:,(clust(1,j))),Boston(:,poss(1,i)))>=alfaf & out <=alfat & flag1==0
+            sf=size(clust(:,j),1);
+            sf=sf+1;
+            clust(sf,j)=poss(1,i);
+            flag=1;
+            flag1=1;
+        end
+        
+    end
+        if flag==0
+             scl=size(clust,2);
+            scl=scl+1;
+            clust(1,scl)=poss(1,i);
+        end
+    end
+end
